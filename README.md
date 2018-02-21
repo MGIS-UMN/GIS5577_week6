@@ -24,7 +24,7 @@ This a modeled climate dataset that we are using.
     1. create_cruts_322.sql - Will load the monthly pixel values
     1. cruts_322_globaltemplate.sql - Will load the global template
 1. Each can be executed using following -f flag when connecting to PostgreSQL
-psql -h  -d x5000 -U -x5000 -f create_cruts_322.sql
+    1. psql -h  -d x5000 -U -x5000 -f create_cruts_322.sql
 
 ## Using CRUTS 3.22
 The CRUTS dataset (cruts_322_us_climate) is a large denormalized table that provides 1 record for every pixel for every observance. The United States is covered with over 67,000 observaations, which can be found in the cruts_global_template table.
@@ -60,9 +60,9 @@ Join the two tables together using the key pixel_id in both tables. Remember the
     INNER JOIN cruts_322_us_climate c ON (t.pixel_id = c.pixel_id)WHERE c.tmx > 20 AND
     date_part('year', sample_date) = 2008
 
-*If you map this you will get multiple observations per location. You might need to reduce this and rephrase the question to be.*
+*If you map this you will get multiple observations per location. You might need to reduce the data and rephrase the question to be.*
 
-### Question: Identify locations wher the max temperature was above 20C in June of 2008
+### Question: Identify locations where the max temperature was above 20C in June of 2008
     SELECT t.pixel_id, t.geom, c.tmx, sample_date
     FROM cruts_322_globaltemplate t
     INNER JOIN cruts_322_us_climate c ON (t.pixel_id = c.pixel_id)
