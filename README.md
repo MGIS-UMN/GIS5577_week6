@@ -51,23 +51,23 @@ The CRUTS dataset (cruts_322_us_climate) is a large denormalized table that prov
     geom_info text,
     geom geometry
 
-## Joining
+## Joining Climate Data for Analysis
 Join the two tables together using the key pixel_id in both tables. Remember the CRUTS dataset table has a value for pixel_id for each month in the year. 
 
 ### Question: Identify locations where the max temperature was above 20C in 2008. 
-SELECT t.pixel_id, t.geom, c.tmx, sample_date
-from cruts_322_globaltemplate t
-INNER JOIN cruts_322_us_climate c ON (t.pixel_id = c.pixel_id)WHERE c.tmx > 20 AND
-date_part('year', sample_date) = 2008
+    SELECT t.pixel_id, t.geom, c.tmx, sample_date
+    FROM cruts_322_globaltemplate t
+    INNER JOIN cruts_322_us_climate c ON (t.pixel_id = c.pixel_id)WHERE c.tmx > 20 AND
+    date_part('year', sample_date) = 2008
 
 *If you map this you will get multiple observations per location. You might need to reduce this and rephrase the question to be.*
 
 ### Question: Identify locations wher the max temperature was above 20C in June of 2008
-SELECT t.pixel_id, t.geom, c.tmx, sample_date
-from cruts_322_globaltemplate t
-INNER JOIN cruts_322_us_climate c ON (t.pixel_id = c.pixel_id)
-WHERE c.tmx > 20 AND
-date_part('year', sample_date) = 2008 AND date_part('month', sample_date) = 6
+    SELECT t.pixel_id, t.geom, c.tmx, sample_date
+    FROM cruts_322_globaltemplate t
+    INNER JOIN cruts_322_us_climate c ON (t.pixel_id = c.pixel_id)
+    WHERE c.tmx > 20 AND
+    date_part('year', sample_date) = 2008 AND date_part('month', sample_date) = 6
 
 
 
