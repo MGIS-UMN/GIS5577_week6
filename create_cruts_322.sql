@@ -18,7 +18,7 @@ pre float,
 vap float
 );
 
-\copy cruts_322_us_climate from 'C:\git\GIS5577_spring_2018\cruts_322_climate.csv' WITH CSV HEADER;
+\copy cruts_322_us_climate from 'C:\git\GIS5577_spring_2018\GIS5577_week6\cruts_322_us_data_2005_2013.csv' WITH CSV HEADER;
 
 ALTER TABLE cruts_322_us_climate ADD geom geometry;
 
