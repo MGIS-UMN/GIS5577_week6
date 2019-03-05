@@ -3,7 +3,7 @@ This is the repository for Week 6 class exercises
 
 The purpose of this weeks class is to practice conducting spatial queries.
 Begin by loading the following datasets, which are all in WGS84, SRID 4326
-## Datasets can be found in the shapefile directory
+### Datasets can be found in the shapefile directory
 1. States 
 Cartographic boundaries of the US States
 1. US Cities
@@ -12,10 +12,12 @@ Point dataset of major us cities
 Polygon dataset of all us counties
 1. US Roads
 Polyline dataset of major us roads
+1. US Tracts
+Polygon dataset of all us census tracts in the US
 
-# Climate Datasets
+### Climate Datasets
 
-## CRUTS 3.22
+#### CRUTS 3.22
 This a modeled climate dataset that we are using.
 1. To use the CRUTS dataset you will need to load 2 different tables
 1. Table1 is the cruts_global_template
@@ -55,19 +57,23 @@ The CRUTS dataset (cruts_322_us_climate) is a large denormalized table that prov
 Join the two tables together using the key pixel_id in both tables. Remember the CRUTS dataset table has a value for pixel_id for each month in the year. 
 
 ### Question: Identify locations where the max temperature was above 20C in 2008. 
+```sql
     SELECT t.pixel_id, t.geom, c.tmx, sample_date
     FROM cruts_322_globaltemplate t
     INNER JOIN cruts_322_us_climate c ON (t.pixel_id = c.pixel_id)WHERE c.tmx > 20 AND
     date_part('year', sample_date) = 2008
+```
 
 *If you map this you will get multiple observations per location. You might need to reduce the data and rephrase the question to be.*
 
-### Question: Identify locations where the max temperature was above 20C in June of 2008
+### Question: Identify locations where the max temperature was above 20C for June of 2008
+```sql
     SELECT t.pixel_id, t.geom, c.tmx, sample_date
     FROM cruts_322_globaltemplate t
     INNER JOIN cruts_322_us_climate c ON (t.pixel_id = c.pixel_id)
     WHERE c.tmx > 20 AND
     date_part('year', sample_date) = 2008 AND date_part('month', sample_date) = 6
+```
 
 
 
