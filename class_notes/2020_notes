@@ -1,0 +1,55 @@
+shp2pgsql -I -s 4326 -W latin1 <filepath> <table_name> | psql -h 129.114.17.63 -d <databasename> -U <user>
+
+
+shp2pgsql -I -s 4326 -W LATIN1 c:\work\GIS5577_week6\shapefiles\us_counties.shp us_counties | psql -h 129.114.17.63 -d classroom -U david
+
+psql -h 129.114.17.63 -d classroom -U david -f 
+
+
+WITH temporal as
+(
+SELECT ST_union(geom) as geom
+FROM us_counties
+WHERE statefp = '19'
+)
+SELECT c.name, c.geom
+FROM us_counties c, temporal t
+WHERE ST_Relate(c.geom, t.geom, 'FF2F11212')
+
+
+
+WITH dataset as
+(
+SELECT cn.gid, count(r.gid) as num_roads, cn.name
+FROM us_counties cn
+INNER JOIN us_roads r ON ST_Intersects(r.geom, cn.geom)
+GROUP BY cn.gid, cn.name
+ORDER BY num_roads  DESc
+)
+select d.gid, d.geom, d.num_roads, d.name, c.statefp as state_fips
+fROM dataset d
+INNER JOIN us_counties c on (d.gid = c.gid)
+
+
+with ini as
+(
+select c.tmp, s.name, s.geom as geom, sample_date
+from cruts_322_us_climate c 
+join states s ON ST_intersects(c.geom, s.geom)
+)
+SELECt avg(tmp) as average_tem, name, geom
+FROM ini 
+WHERE date_part('year', sample_date) = 2010 AND date_part('month', sample_date) = 12
+GROUP BY name, geom
+
+SELECT
+FROM us_cities c
+INNER JOIN us_roads r NOT ST_DWithin()
+
+
+SeLECT C.name, c.geom
+FROM us_counties c INNER JOIN us_roads r
+ON ST_Crosses(c.geom, r.geom) AND r.name = 'Interstate Route 5'
+GROUP BY c.name, c.geom
+
+
