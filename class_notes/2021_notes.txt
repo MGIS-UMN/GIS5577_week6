@@ -1,0 +1,98 @@
+Notes 2/23/2021
+
+Cheat sheet
+https://www.postgis.us/downloads/postgis20_cheatsheet.pdf
+
+
+--- what is the largest state?
+SELECT name as state_name, ST_area(Geography(geom)), ST_area(ST_Transform(geom,3857)) as area2, ST_SRID(geom), ST_Centroid(geom) as geom
+-- no limit to the number of fields
+from states
+
+
+--- Step 1 create centroids for each state
+-- pgAdmin is clickable for geom
+with points as
+(
+-- results of this are stored in the points --NOT a temporary table
+SELECT gid, ST_Centroid(geom) as geom
+FROM states
+WHERE name = 'Wyoming'
+)
+--- Step 2 Count how many centroids are within each state
+SELECT *
+FROM states b 
+-- INNER JOIN RETURN 1:1 (Using wyoming as the only centroid)
+-- LEFT JOIN RETURN ALL of states and only points where the predicate is true
+-- RIGHT JOIN RETURN all of points and only boundarys of states where the predicate is true
+RIGHT JOIN points p on ST_Contains(b.geom, p.geom)
+
+
+ST_Intersects = find where geometries share point, line, polygon features
+ST_Intersection = morphs geometry. Uses clipping features
+
+
+
+shp2pgsql -I -s 4326 -W Latin1 c:\git\GIS5577_week6\shapefiles\us_counties.shp 
+
+
+
+------------------------------------------------------------
+ 
+All class notes
+
+
+--- what is the largest state?
+SELECT name as state_name, ST_area(Geography(geom)), ST_area(ST_Transform(geom,3857)) as area2, ST_SRID(geom), ST_Centroid(geom) as geom
+-- no limit to the number of fields
+from states
+
+--- Step 1 create centroids for each state
+-- pgAdmin is clickable for geom
+with points as
+(
+-- results of this are stored in the points --NOT a temporary table
+SELECT gid, ST_Centroid(geom) as geom
+FROM states
+WHERE name = 'Wyoming'
+)
+--- Step 2 Count how many centroids are within each state
+SELECT *, ST_Contains(b.geom, p.geom) as contains, -- don't do this because it doesn't make sense to caluculate the area of point ST_area(p.geom)
+FROM states b 
+-- INNER JOIN RETURN 1:1 (Using wyoming as the only centroid)
+-- LEFT JOIN RETURN ALL of states and only points where the predicate is true
+-- RIGHT JOIN RETURN all of points and only boundarys of states where the predicate is true
+LEFT JOIN points p on ST_Contains(b.geom, p.geom)
+-- INNER == WHERE BOTH ARE TRUE
+
+
+-- SUBQUERY ---
+-- Step 2
+SELECT * 
+FROM states b 
+INNER JOIN ( 
+			-- Step 1
+			SELECT gid, ST_Centroid(geom) as geom
+			FROM states
+			WHERE name = 'Wyoming'
+			)	p ON ST_Contains(b.geom, p.geom)
+
+
+
+-- What doesn't intersect with wyoming's centroid
+with points as
+(
+SELECT gid, ST_Centroid(geom) as geom
+FROM states
+WHERE name = 'Wyoming'
+)
+SELECT *
+FROM states b 
+-- INNER JOIN With ST_INTersects is the same as ST_Covers
+--ST_Disjoint  === not ST_INTersects
+INNER JOIN points p on not ST_INTersects(p.geom, b.geom)
+
+
+SELECT  gid, statefp, statefp
+from states
+

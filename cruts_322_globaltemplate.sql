@@ -8,7 +8,7 @@ pixel_id integer,
 geom_info text
 );
 
-\copy cruts_322_globaltemplate from 'C:\work\GIS5577_week6\cruts_322_globaltemplate.csv' WITH CSV HEADER;
+\copy cruts_322_globaltemplate from 'C:\git\GIS5577_week6\cruts_322_globaltemplate.csv' WITH CSV HEADER;
 
 ALTER TABLE cruts_322_globaltemplate ADD geom geometry;
 

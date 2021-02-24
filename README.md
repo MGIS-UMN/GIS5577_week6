@@ -10,6 +10,7 @@ Cartographic boundaries of the US States
 Point dataset of major us cities
 1. US Counties
 Polygon dataset of all us counties
+shp2pgsql -I -s 4326 -W Latin1 c:\git\GIS5577_week6\shapefiles\us_counties.shp 
 1. US Roads
 Polyline dataset of major us roads
 1. US Tracts
@@ -74,6 +75,7 @@ Join the two tables together using the key pixel_id in both tables. Remember the
     WHERE c.tmx > 20 AND
     date_part('year', sample_date) = 2008 AND date_part('month', sample_date) = 6
 ```
+
 
 
 

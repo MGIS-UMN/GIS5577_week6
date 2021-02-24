@@ -1,7 +1,7 @@
 
 /*
 Question 1
-For each geographic feature what is the average temperature in July 2005.
+For each geographic feature what is the average temperature in July 2008.
     Census tract
     County
     State
@@ -21,8 +21,7 @@ For each geographic unit, identify those that do not have any us cities
 Question 3
 Calculate area for each geographic feature, what is the largest county in the continental United States?
 Calculate the difference between the attribute area and the calculated area.
-Calculate the population density people / per s/*
-Quare mile
+Calculate the population density people / per square mile
 */
 
 /*
