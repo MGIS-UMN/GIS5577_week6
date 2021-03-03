@@ -44,3 +44,58 @@ drop view mn_county_centroids;
 
 alter view mn_county_centroid_2 rename to mn_county_centroid;
 
+
+--- david’s in class code ----
+
+SELECT name as place_name, ST_Centroid(geom) as geom, ST_Geohash(ST_Centroid(geom),1), ST_Geohash(ST_Centroid(geom), 6), ST_Geohash(ST_Centroid(geom), 20)
+from states
+
+GRANT SELECT ON ALL TABLES IN SCHEMA public TO students;
+GRANT SELECT ON ALL sequences IN SCHEMA public TO studen
+
+
+Select * 
+from cruts_322_us_climate_big
+limit 200
+--314496 (climate)
+--"40,435,200 big"  
+
+
+--- March 2009
+
+EXPLAIN 
+SELECT * 
+FROM cruts_322_us_climate_big
+WHERE date_part('year', sample_date) = 2009 and date_part('month', sample_date)::integer = 4 
+LIMIT 200
+-- 4 secs 992 msec.
+-- 4 secs 96 msec.
+-- 2 secs 196 msec.  --- March we ran 3 times in arow
+-- We switched the month and it was ok 1 secs 698 msec.
+
+--- Remove limit
+
+
+SELECT * 
+FROM cruts_322_us_climate_big
+WHERE tmx > 25
+LIMIT 200
+
+--- We can create an index
+create index cruts_322_us_climate_big_year on cruts_322_us_climate_big USING btree(date_part('year', sample_date))
+create index cruts_322_us_climate_big_month on cruts_322_us_climate_big USING btree(date_part('month', sample_date))
+create index cruts_322_us_climate_big_year_month on cruts_322_us_climate_big USING btree(date_part('year', sample_date), date_part('month', sample_date))
+
+--- Remove limit
+SELECT * 
+FROM cruts_322_us_climate_big
+WHERE date_part('year', sample_date) = 2009 and date_part('month', sample_date)::integer = 4 
+-- 53 secs 840 msec.
+-- 1 min 18 secs.
+
+EXPLAIN
+SELECT * 
+FROM cruts_322_us_climate_big
+WHERE date_part('year', sample_date) = 2009
+
+
