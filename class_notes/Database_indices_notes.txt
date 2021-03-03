@@ -1,0 +1,46 @@
+SQL is a declarative language
+We have to figure out how to find/morph/etc. the data
+
+
+Programming vs Database
+Searching raw text - programming generally faster
+CSV file parsing - programming generally faster (not for VERY large files)
+Multiple users on one file - database to maintain original and keep logic intact
+
+
+Indices and data structure makes a database fast
+Databases constantly understand queries being run and index the data in a particular way so we can come back to it quickly
+It’s like reading a book, then marking the pages which have information you want so you can study later
+
+
+Index Varieties
+B-Tree = equality (<=, ==, etc.) and range queries
+Hash = for databases that grow in size
+When you insert rows into an already million row database, how do you index those new rows?
+Example: a new library has a fixed amount of rows for books. We want to make sure that each category of books can grow if necessary. Instead of being very specific about the amount of rows for each book category, we use a hierarchy (fiction vs nonfiction, then A-Z in fiction and nonfiction).
+GeoHash - hierarchy for spatial data based on levels. Level 1 is the lowest level. As levels increase, the bounding box represents a smaller portion of the earth’s surface.
+Ex: Level 1 geohash includes a large portion of earth’s surface
+Level 6  represents a much smaller square box over earth’s surface
+If you didn’t want to use a join (which takes lots of time) you could use a geohash to see if the two areas touch at all
+
+Remember DATE_PART(field, source) to query based on a date column https://www.postgresqltutorial.com/postgresql-date_part/
+
+Create index for faster queries
+Syntax
+CREATE INDEX  index_name  ON  table_name  USING  index_type 
+Index_type = B-tree, hash, etc
+
+Spatial Index
+CREATE INDEX index_name ON table_name USING GIST (geom)
+
+Build an index on columns that would generally be useful for querying. We can’t build an index for everything.
+
+
+create view mn_county_centroid_2 as 
+select name as place_name,  ST_setsrid(geom, 4326) as geom,  ST_setsrid(st_centroid, 4326)
+from mn_county_centroids mcc 
+
+drop view mn_county_centroids;
+
+alter view mn_county_centroid_2 rename to mn_county_centroid;
+
