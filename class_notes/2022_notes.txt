@@ -1,0 +1,194 @@
+-- What is in geometry and geography columns
+-- Nothing in the geography ?
+
+SELECT *
+FROM geometry_columns;
+-- This will always have a listing of the current spatial tables in your database.
+
+-- Why is this a view and not a table?
+-- Automatically updating and its looking for a particular data type.
+
+select *
+from cities
+
+
+select geoid, name as place_name, geom
+from us_states
+where name IN ('Minnesota', 'Nebraska');
+
+
+GRANT SELECT on ALL TABLES in SCHEMA public TO students;
+GRANT SELECT on ALL SEQUENCES in SCHEMA public TO students;
+
+
+select *
+from gis5577.cruts_322_us_climate
+limit 20;
+
+UPDATE gis5577.cruts_322_us_climate
+SET geom = ST_SETSRID(ST_POINT(longitude, latitude), 4326);
+
+
+
+select geoid, name as place_name, ST_Centroid(geom) as geom
+-- geom, ST_area(St_transform(geom, 26915)) as sq_km
+-- I wanted to project this datasets and i treid
+from us_states
+where name IN ('Minnesota', 'Nebraska');
+
+with minneapolis_dataset as
+(
+select gid, areaname, geom
+from us_cities
+where gid = 1882
+-- where areaname LIKE 'Minne%'
+)
+select d.gid, name as place_name, s.geom
+from us_states s
+inner join minneapolis_dataset d on ST_Intersects(s.geom, d.geom)
+
+
+
+
+with minneapolis_dataset as
+(
+select gid, areaname, geom
+from us_cities
+where gid = 1881
+-- where areaname LIKE 'Minne%'
+)
+select s.gid as state_id, d.gid as point_id, s.name as place_name, s.geom
+from us_states s
+inner join minneapolis_dataset d on ST_Intersects(s.geom, d.geom)
+
+
+
+with minneapolis_dataset as
+(
+select gid, areaname, geom
+from us_cities
+where gid = 1881
+-- where areaname LIKE 'Minne%'
+)
+select s.gid as state_id, d.gid as point_id, ST_Intersects(s.geom, d.geom), s.name as place_name, s.geom
+from us_states s, minneapolis_dataset d
+--left join minneapolis_dataset d on 
+WHERE ST_Intersects(s.geom, d.geom) is True
+-- output of ST_Intersects True/False
+
+
+
+with minneapolis_dataset as
+(
+select gid, areaname, geom
+from us_cities
+where gid = 2568
+-- where areaname LIKE 'Minne%'
+)
+select s.gid as state_id, d.gid as point_id, ST_Intersects(s.geom, d.geom), s.name as place_name, s.geom
+from us_states s, minneapolis_dataset d
+--left join minneapolis_dataset d on 
+WHERE ST_Intersects(s.geom, d.geom) is True
+
+
+
+with state_dataset as
+(
+-- Get the state of Ohio
+select gid, name as state_name, geom
+from us_states
+where name = 'Ohio'
+)
+select *
+-- s.gid as state_id, d.gid as point_id, ST_Intersects(o.geom, c.geom), s.name as place_name, s.geom
+from state_dataset o , us_cities c
+WHERE ST_Intersects(o.geom, c.geom) is True
+-- output of ST_Intersects True/False
+
+
+with state_dataset as
+(
+-- Get the state of Ohio
+select gid, name as state_name, geom
+from us_states
+where name = 'Ohio'
+)
+select c.gid, c.areaname, c.geom
+-- s.gid as state_id, d.gid as point_id, ST_Intersects(o.geom, c.geom), s.name as place_name, s.geom
+from state_dataset o , us_cities c
+WHERE ST_Intersects(o.geom, c.geom) is True
+-- output of ST_Intersects True/False
+
+
+
+
+WITH interstate as
+(
+select gid, name, state as state_name, geom
+--- we ran a distinct on state to see all the states that matched 
+from us_roads
+-- FIND 35 W
+-- where name LIKE '%35W%' or name LIKE '%35'
+-- We found that attribute is INterstate Route 35
+WHERE name = 'Interstate Route 35'
+)
+select DISTINCT s.gid, s.name, s.geom, ST_INTERSECTS(s.geom, i.geom)
+from interstate i, us_states s
+WHERE ST_INTERSECTS(s.geom, i.geom) is True;
+-- 145 features for Interstate 35
+
+
+
+
+-- Find all the roads within oregon
+WITH oregon as
+(
+select gid, name as state_name, geom
+from us_states
+where name = 'Oregon'
+-- 1 record is found here
+)
+select r.gid, r.feature, r.name as road_name, r.geom as road_geom, o.geom as boundary_geom
+from us_roads r, oregon o
+Where ST_Intersects(r.geom, o.geom) is True
+
+
+-- Find all the roads within oregon
+WITH oregon as
+(
+select gid, name as state_name, geom
+from us_states
+where name = 'Oregon'
+-- 1 record is found here
+)
+select r.gid, r.feature, r.name as road_name, r.geom as road_geom, o.geom as boundary_geom
+from us_roads r, oregon o
+Where ST_Contains(o.geom, r.geom) is True
+-- ST_Intersects 451 Features
+
+
+-- Find all the roads within oregon
+WITH oregon as
+(
+select gid, name as state_name, geom
+from us_states
+where name = 'Oregon'
+-- 1 record is found here
+), oregon_roads as
+(
+select r.gid, r.feature, r.name as road_name, r.geom as road_geom, o.geom as boundary_geom
+from us_roads r, oregon o
+Where ST_Contains(o.geom, r.geom) is True
+-- ST_Intersects 451 Features
+-- ST_Contain 420?
+)
+select road_name, st_union(road_geom) as geom
+from oregon_roads
+GROUP BY road_name
+
+
+
+
+
+
+
