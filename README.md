@@ -1,5 +1,5 @@
 # GIS 55777 Week 6
-This is the repository for Week 6 class exercises
+This is the repository for Week 6 class exercises, Updated for 2023
 
 The purpose of this weeks class is to practice conducting spatial queries.
 Begin by loading the following datasets, which are all in WGS84, SRID 4326
