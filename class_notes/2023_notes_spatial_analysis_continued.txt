@@ -1,0 +1,242 @@
+Analyzing data
+
+
+
+
+What sort of JOIN are we going to use here
+
+SELECT 
+from cruts_322_us_climate
+LIMIT 100
+
+
+
+SELECT pixel_id, geom_info, ST_SetSRID(geom, 4326) as geom
+from cruts_322_globaltemplate
+
+SELECT pixel_id, tmp
+from cruts_322_us_climate a
+INNER JOIN cruts_322_globaltemplate b
+ON a.pixel_id = b.pixel_id
+
+
+SELECT a.pixel_id, tmp, ST_SetSRID(b.geom, 4326) as geom
+from cruts_322_us_climate a
+INNER JOIN cruts_322_globaltemplate b
+ON a.pixel_id = b.pixel_id
+
+
+
+
+Multiple values for the same point
+
+SELECT a.pixel_id, tmp, a.sample_date, ST_SetSRID(b.geom, 4326) as geom
+from cruts_322_us_climate a
+INNER JOIN cruts_322_globaltemplate b
+ON a.pixel_id = b.pixel_id
+
+
+SELECT a.pixel_id, tmp, a.sample_date, ST_SetSRID(b.geom, 4326) as geom
+from cruts_322_us_climate a
+INNER JOIN cruts_322_globaltemplate b
+ON a.pixel_id = b.pixel_id
+-- 314496
+WHERE a.sample_date = '2010-06-16'
+--3276
+
+
+What is the average temperature for Minnesota in June 2010
+
+Select (something) 
+(3) Sum (all the temperature values) the ones from June 2010  / (2) Average the temp (all the temperature values)
+(2) Count how many points are in Minnesota = Get the average temperature
+(2) Intersection data between climate and the US states
+	AND ST_Intersects(geom,
+(SELECT geom
+FROM us_states
+WHERE name = ‘Minnesota’))
+WHERE name = ‘Minnesota’  & Date = 2010 and Date = June
+
+
+
+
+SELECT *
+FROM cruts_322_us_climate
+(2) WHERE sample_date BETWEEN '2010-06-01'AND '2010-06-30'
+
+
+https://postgis.net/docs//manual-3.4/postgis_cheatsheet.html
+
+--- Step 1 is get the climate data
+SELECT a.pixel_id, tmp, a.sample_date, ST_SetSRID(b.geom, 4326) as geom
+from cruts_322_us_climate a
+INNER JOIN cruts_322_globaltemplate b
+ON a.pixel_id = b.pixel_id
+-- 314496`WHERE a.sample_date = '2010-06-16'
+
+WITH climate_data as
+(
+SELECT a.pixel_id, tmp, a.sample_date, ST_SetSRID(b.geom, 4326) as geom
+from cruts_322_us_climate a
+INNER JOIN cruts_322_globaltemplate b
+ON a.pixel_id = b.pixel_id
+WHERE a.sample_date = '2010-06-16'
+)
+
+
+
+WITH climate_data as
+(
+SELECT a.pixel_id, tmp, a.sample_date, ST_SetSRID(b.geom, 4326) as geom
+from cruts_322_us_climate a
+INNER JOIN cruts_322_globaltemplate b
+ON a.pixel_id = b.pixel_id
+WHERE a.sample_date = '2010-06-16'
+)
+SELECT *
+FROM us_states s
+INNER JOIN climate_data c ON ST_Intersects(c.geom, s.geom)
+
+
+
+WITH climate_data as
+(
+SELECT a.pixel_id, tmp, a.sample_date, ST_SetSRID(b.geom, 4326) as geom
+from cruts_322_us_climate a
+INNER JOIN cruts_322_globaltemplate b
+ON a.pixel_id = b.pixel_id
+WHERE a.sample_date = '2010-06-16'
+)
+SELECT s.name, sum(tmp) as total_temp
+FROM us_states s
+INNER JOIN climate_data c ON ST_Intersects(c.geom, s.geom)
+GROUP BY s.name 
+
+
+WITH climate_data as
+(
+SELECT a.pixel_id, tmp, a.sample_date, ST_SetSRID(b.geom, 4326) as geom
+from cruts_322_us_climate a
+INNER JOIN cruts_322_globaltemplate b
+ON a.pixel_id = b.pixel_id
+WHERE a.sample_date = '2010-06-16'
+)
+SELECT s.name, s.geom, avg(c.tmp) as avg_temp,
+    sum(c.tmp) as sum_temp, 
+    min(c.tmp) as min_temp
+FROM us_states s
+INNER JOIN climate_data c ON ST_Intersects(c.geom, s.geom)
+GROUP BY s.name, s.geom
+
+
+--- INDICES
+select *
+from cruts_322_us_climate_all a
+WHERE a.sample_date = '2010-06-16'
+
+
+4.622
+5.146
+2.266
+3.458	
+3.438
+11.245
+2.68
+
+New Query
+5.888
+
+
+---
+select *
+from cruts_322_us_climate_all a
+WHERE date_part('year', a.sample_date) = 2008 and date_part('month', a.sample_date) = 7
+28.8
+13.009
+1:07.785
+2.983
+
+
+
+select *
+from cruts_322_us_climate_all_index a
+WHERE date_part('year', a.sample_date) = 2008 and date_part('month', a.sample_date) = 7
+
+.02m
+
+
+
+
+
+
+
+
+
+
+
+
+
+Question 4
+SELECT ST_Centroid(geom)
+FROM us_states
+WHERE stusps = 'WY';
+
+With state_data as
+(
+SELECT ST_Centroid(geom) as geom
+FROM us_states
+WHERE stusps = 'WY';
+)
+SELECT c.name, ST_Distance(s.geom, c.geom) as distance
+FROM us_states s, us_cities c
+ORDER BY 2 desc
+
+
+/*
+Question 5
+For each geographic feature, find all adjacent geographic features to the state of Iowa which are not Iowa features.
+    Census tract
+    County
+*/
+
+with iowa as(
+SELECT geom
+FROM us_states
+WHERE name = 'Iowa'
+)
+SELECT uc.geom
+FROM iowa, us_counties uc 
+WHERE ST_Disjoint(uc.geom, iowa.geom)
+
+
+Question 6
+
+SELECT c.name, c.countyfp, count(*) as num_roads
+FROM us_counties c
+INNER JOIN us_roads r ON st_intersects(c.geom, r.geom)
+GROUP BY c.countyfp, c.name
+ORDER BY num_roads DESC LIMIT 1
+
+—Option 2
+WITH county_roads as
+(
+select b.geom
+from us_roads b
+)
+select a.geoid, a.name, count(a.geoid)
+from us_counties a
+inner join county_roads c on ST_intersects(a.geom, c.geom)
+group by a.geoid, a.name
+order by count(a.geoid) desc 
+limit 1
+
+
+
+
+/*
+Question 7
+Identify which us cities are not within 30 kilometers of any road?
+Identify which us cities are within 5 kilometers of any interstate road.
+*/
+
+

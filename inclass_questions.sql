@@ -27,7 +27,7 @@ Calculate the population density people / per square mile
 /*
 Question 4
 For this Question choose an interstate road. 
-For each geographic unit, identify the features that an the road goes through
+For each geographic unit, identify the features that the road goes through
     Census tract
     County
 */
