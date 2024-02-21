@@ -1,0 +1,321 @@
+Class notes week 6 GIS 5577 2024
+
+
+Clone this repo
+https://github.com/MGIS-UMN/GIS5577_week6
+
+Load the following datasets all use SRID 4326
+Us_states
+Us_counties
+Us_roads
+Us_cities
+
+https://postgis.net/docs/manual-3.5/postgis_cheatsheet-en.html
+
+Count cites within each state boundary
+Within, Intersects
+
+Boolean = ST_Within(geometry A, geometry B);
+
+Description
+Returns TRUE if geometry A is within geometry B. A is within B if and only if all points of A lie inside (i.e. in the interior or boundary of) B (or equivalently, no points of A lie in the exterior of B), and the interiors of A and B have at least one point in common.
+
+For this function to make sense, the source geometries must both be of the same coordinate projection, having the same SRID.
+
+ST_Within(Cities, States)
+
+SELECT *, ST_Within(a.geom, b.geom)
+FROM states b, us_cities_4326 a
+-- Cross join (Check every b with every a)
+WHERE b.name = ‘Minnesota’
+
+
+
+State
+City
+Geom
+Geom
+ST_Within
+MN
+Minneapolis
+
+
+
+
+T
+MN
+Madison
+
+
+
+
+F
+MN
+St.Paul
+
+
+
+
+T
+WI
+Minneapolis
+
+
+
+
+F
+WI
+Madison
+
+
+
+
+T
+
+
+
+
+
+
+
+
+
+
+
+
+
+SELECT *, ST_Within(a.geom, b.geom)
+FROM states b
+INNER JOIN us_cities_4326 a
+ON ST_Within(a.geom, b.geom)
+-- (Check every b with every a, but if its false I don’t keep it)
+WHERE b.name = ‘Minnesota’
+
+SELECT b.gid, name as place_name, a.areaname as city_name, count(1) as Num_cities
+-- , ST_Within(a.geom, b.geom)
+FROM states b INNER JOIN
+us_cities_4326 a ON ST_Within(a.geom, b.geom)
+-- Cross join (Check every b with every a)
+WHERE b.name = 'Minnesota'
+GROUP BY b.gid, place_name
+ORDER BY b.gid, place_name
+
+
+SELECT b.gid, b.geom, name as place_name, count(1) as Num_cities
+FROM states b INNER JOIN
+us_cities_4326 a ON ST_Within(a.geom, b.geom)
+GROUP BY b.gid, b.geom, place_name
+ORDER BY b.gid, b.geom, place_name
+
+
+
+1	"Nebraska"	"Bellevue"	true
+1	"Nebraska"	"Beatrice"	true
+1	"Nebraska"	"Lincoln"	true
+1	"Nebraska"	"Papillion"	true
+1	"Nebraska"	"La Vista"	true
+1	"Nebraska"	"Chalco"	true
+
+
+SELECT b.gid, name as place_name, count(1) as Num_cities
+FROM states b, us_cities_4326 a
+--- CROSS JOIN
+WHERE ST_Within(a.geom, b.geom) IS TRUE
+GROUP BY b.gid, place_name
+ORDER BY b.gid, place_name
+
+SELECT b.gid, name as place_name, count(1) as Num_cities
+FROM states b, us_cities_4326 a
+WHERE ST_INtersects(a.geom, b.geom) IS TRUE
+GROUP BY b.gid, place_name
+ORDER BY b.gid, place_name
+
+
+Intersects
+Disjoint
+Equals = SAME
+Touches
+Crosses
+Overlaps = AREA
+Contains
+Within
+
+
+
+
+
+Give me all the us_cities that are in Minnesota (the geoms of the cities)
+
+SELECT b.gid, b.name as place_name, a.geom
+FROM states b
+INNER JOIN us_cities_4326 a ON ST_Within(a.geom, b.geom)
+WHERE b.name = 'Minnesota'
+
+
+What state has the 15th largest area
+https://postgis.net/docs/manual-3.5/postgis_cheatsheet-en.html
+float ST_Area(geometry g1);
+
+SELECT b.name as place_name, ST_Area(geom);
+FROM states b
+
+
+SELECT b.name as place_name, ST_Area(geom), ST_AREA(ST_Transform(geom, 102003))
+FROM states b
+ORDER BY 3 DESC
+
+WE to project this 
+geometry ST_Transform(geometry g1, integer srid);
+
+SELECT b.name as place_name, ST_Area(geom), ST_AREA(ST_Transform(geom, 102003)),
+ST_AREA(Geography(geom))
+FROM states b
+ORDER BY 3 DESC
+
+Functional Index
+CREATE INDEX [functionName] ON [tablename] USING 
+
+create index cruts_322_us_climate_year on cruts_322_us_climate using btree(date_part('year', sample_date));
+
+btree( sample_date  )
+
+
+
+SELECT min(sample_date), max(sample_date)
+from gis5577.cruts_322_us_climate
+2001-01-16
+2002-11-16
+2008-06-16
+2002-02-15 
+2013-12-16
+limit 50
+
+SELECT avg(tmp) as avg_us_temp
+from gis5577.cruts_322_us_climate
+WHERE sample_date = ‘’
+
+Date: Time
+
+2002-11-16: 1.354
+2002-02-15: 1.774
+2013-12-16: 1.225
+2008-06-16: 1.389
+
+
+SELECT avg(tmp) as avg_us_temp
+from gis5577.cruts_322_us_climate
+WHERE date_part('year', sample_date) = 2013
+
+2008: 2.224
+2003: 2.08
+
+
+
+--- Report the average temp for each state? average temperature in July 2008
+select *
+from cruts_322_us_climate
+WHERE sample_date = '2007-11-16'
+
+
+SELECT  s.name as state_name, s.geom, avg(tmp) as avg_temp
+FROM states s, cruts_322_us_climate c
+WHERE ST_Within(c.geom, s.geom) AND sample_date = '2008-07-16'
+GROUP BY s.name, s.geom
+
+
+SELECT  s.name as state_name --avg(tmp) as avg_temp
+FROM states s
+INNER JOIN cruts_322_us_climate c ON ST_Within(c.geom, s.geom)
+
+Difference between 2008 & 2009
+
+WITH data2008 as
+(
+SELECT  s.name as state_name, s.geom, avg(tmp) as avg_temp
+FROM states s, cruts_322_us_climate c
+WHERE ST_Within(c.geom, s.geom) AND sample_date = '2008-07-16'
+GROUP BY s.name, s.geom
+), data2009 as
+(
+SELECT  s.name as state_name, s.geom, avg(tmp) as avg_temp
+FROM states s, cruts_322_us_climate c
+WHERE ST_Within(c.geom, s.geom) AND sample_date = '2009-07-16'
+GROUP BY s.name, s.geom
+)
+SELECT d1.state_name, d1.geom, d1.avg_temp - d2.avg_temp as temp_change 
+FROM data2008 d1 INNER JOIN data2009 d2 on (d1.state_name = d2.state_name)
+
+
+PG-Admin code
+
+SELECT b.gid, name as place_name, a.areaname as city_name, ST_Within(a.geom, b.geom), b.geom
+FROM states b, us_cities_4326 a
+-- 6.11
+-- THe GEOM columns are big and can slow down your time
+
+INNER JOIN
+us_cities_4326 a ON ST_Within(a.geom, b.geom)
+-- Cross join (Check every b with every a)
+-- WHERE b.name = 'Minnesota'
+--3557
+--3533
+
+SELECT b.gid, name as place_name, count(1) as Num_cities
+-- , ST_Within(a.geom, b.geom)
+FROM states b INNER JOIN
+us_cities_4326 a ON ST_Within(a.geom, b.geom)
+-- Cross join (Check every b with every a)
+-- WHERE b.name = 'Minnesota'
+GROUP BY b.gid, place_name
+ORDER BY b.gid, place_name
+
+
+SELECT b.gid, name as place_name, count(1) as Num_cities
+FROM states b, us_cities_4326 a
+WHERE ST_Within(a.geom, b.geom) IS TRUE
+GROUP BY b.gid, place_name
+ORDER BY b.gid, place_name
+
+
+SELECT b.gid, name as place_name, count(1) as Num_cities
+FROM states b, us_cities_4326 a
+WHERE ST_INtersects(a.geom, b.geom) IS TRUE
+GROUP BY b.gid, place_name
+ORDER BY b.gid, place_name
+
+
+SELECT b.gid, b.geom, name as place_name, count(1) as Num_cities
+FROM states b INNER JOIN
+us_cities_4326 a ON ST_Within(a.geom, b.geom)
+GROUP BY b.gid, b.geom, place_name
+ORDER BY b.gid, b.geom, place_name
+
+
+SELECT count(1)
+from gis5577.cruts_322_us_climate
+--08.655
+--1.247
+--1.267
+--1.265
+--1.341
+
+SELECT avg(tmp) as avg_us_temp
+from gis5577.cruts_322_us_climate
+WHERE sample_date = '2002-11-16'
+limit 10
+2001-01-16
+2002-11-16
+2008-06-16
+2002-02-15
+2013-12-16
+limit 50
+
+
+SELECT avg(tmp) as avg_us_temp
+from gis5577.cruts_322_us_climate
+WHERE date_part('year', sample_date) = 2001
+
+2.164
+2.210
+
+
