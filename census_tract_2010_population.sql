@@ -14,6 +14,6 @@ male_population bigint,
 female_population bigint
 );
 
-\copy census_tract_2010_population from 'C:\work\GIS5577_week6\census_tract_2010_population.csv' WITH CSV HEADER ENCODING 'LATIN-1';
+\copy census_tract_2010_population from 'F:\git\GIS5577\GIS5577_week6\census_tract_2010_population.csv' WITH CSV HEADER ENCODING 'LATIN-1';
 
 GRANT ALL ON census_tract_2010_population TO students;
