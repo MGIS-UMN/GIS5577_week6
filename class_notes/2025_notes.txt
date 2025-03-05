@@ -1,0 +1,62 @@
+select
+  table_name,
+  pg_size_pretty(table_name)
+  -- pg_total_relation_size(quote_ident(table_name))
+from information_schema.tables
+where table_schema = 'gis5577'
+
+
+
+SELECT count(1)
+FROM gis5577.cruts_322_us_climate
+-- 40,435,200
+
+SELECT *
+FROM gis5577.cruts_322_us_climate
+LIMIT 200
+
+
+SELECT DISTINCT sample_date
+FROM gis5577.cruts_322_us_climate
+	
+	
+
+SELECT avg(tmp)
+FROM gis5577.cruts_322_us_climate
+WHERE sample_date = '2001-02-15'::date
+
+02.487
+01.971
+
+
+EXPLAIN
+SELECT avg(tmp)
+FROM gis5577.cruts_322_us_climate_nonindex
+WHERE sample_date = '2001-02-15'::date
+
+
+
+ANALYZE  -- Runs your query 3 times
+SELECT avg(tmp)
+FROM gis5577.cruts_322_us_climate_nonindex
+WHERE sample_date = '2001-02-15'::date
+
+SELECT *
+FROM cruts_322_us_climate
+LIMIT 20
+WHERE 
+    EXTRACT(MONTH FROM date) = 7 
+    AND EXTRACT(YEAR FROM date) = 2008
+
+
+SELECT *
+FROM geometry_columns
+
+
+SELECT name as place_name, geom
+FROM us_counties
+where name not in (
+	SELECT name as place_name
+	FROM us_counties c
+	inner join us_cities_dh_shp p ON ST_Intersects(p.geom, c.geom)
+	)
